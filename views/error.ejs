@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html class="bg-danger">
+	<head>
+		<%-css('styles')%>
+		<title>Error</title>
+	</head>
+	<body class="bg-danger" style="padding-top:0">
+	<div class="jumbotron" style="background:transparent; max-width:800px; margin-left:auto;margin-right:auto;">
+		<h1 class="text-center"><%= error.status %></h1>
+		<h2 class="text-center"><%= message %></h2>
+		<% if(error.stack) { %>
+		<pre style="font-size:70%;"><%= error.stack %></pre>
+		<% } %>
+	</div>
+	</body>
+</html>

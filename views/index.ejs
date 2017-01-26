@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html ng-app="loquax" detect-classes>
+<head>
+	<meta charset="utf-8">
+	<title>Loquax</title>
+
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+	<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Alegreya+Sans:400|Alegreya+SC:400|Alegreya:400,700,400italic&subset=latin,latin-ext">
+
+	<%-css('styles')%>
+	<!-- <link rel="stylesheet" href="static/all.css"> -->
+
+	<!-- http://www.456bereastreet.com/archive/201106/the_ios_zoom_setting_disables_maximum-scale1_and_user-scalableno/
+			We don't want it to zoom in on, e.g., form fields -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+
+
+<!--
+There is a severe bug in 'web-app-capable' apps that can
+crash the iPhone:
+http://stackoverflow.com/questions/16225693/how-can-i-prevent-ios-standalone-web-apps-from-locking-up-the-device
+
+Also reported on: http://stackoverflow.com/questions/15460502/web-app-with-splash-screen-eventually-prevents-ios-from-exiting-the-application
+
+Currently, the only workaround is to disable that entirely, so the following has been commented out:
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+-->
+
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<link rel="apple-touch-icon" href="<%-assetPath('img/AppIcon60x60@2x.png')%>">
+
+	<!-- For Break Out of Frames script, as recommended by OWASP -->
+	<style id="acj">body{ display:none; }</style>
+
+	<!-- Put in head: http://stackoverflow.com/questions/15538125/angularjs-in-head-vs-body -->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<!-- "Angular 1.3 only supports jQuery 2.1 or above." -->
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular-animate.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular-cookies.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular-touch.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.3/angular-route.min.js"></script>
+	<script src="//cdn.jsdelivr.net/fastclick/1.0.3/fastclick.min.js"></script>
+	<script src="//cdn.jsdelivr.net/jquery.transit/0.9.12/jquery.transit.min.js"></script> <!-- Not from cdnjs, which has an old version -->
+	<!-- See: https://developers.google.com/analytics/devguides/collection/analyticsjs/advanced -->
+	<script async src="//www.google-analytics.com/analytics.js"></script>
+	<script>
+		var initialData = <%-init%>;
+	</script>
+
+	<!-- <script src="static/all.js"></script> -->
+	<%-js('main')%>
+</head>
+<body ng-controller="MainCtrl" fast-click ng-class="{'tap-to-choose': isLoggedIn}" active-class="{{$route.current.activePage}}">
+
+	<nav class="navbar navbar-default primary-nav navbar-fixed-top nonbounce" role="navigation">
+		<div class="container clearfix">
+			<div class="navbar-header">
+				<h1 class="navbar-brand">Loquax</h1>
+			</div>
+			<ul class="nav navbar-nav pull-right">
+				<li ng-class="{active: $route.current.activePage == 'search'}"><a href="#/"><i class="fa fa-search shift-up"></i>Words</a></li>
+				<li ng-class="{active: $route.current.activePage == 'cards'}" ng-show="isLoggedIn"><a href="#/cards"><i class="fa fa-pencil-square-o"></i>Cards</a></li>
+				<li ng-class="{active: $route.current.activePage == 'combine'}" ng-show="isLoggedIn"><a href="#/combine"><i class="fa fa-bolt"></i>Combine</a></li>
+				<li class="text-primary" ng-show="!isLoggedIn"><a class="text-primary" x-linkfix="true" ng-href="{{loginURI}}"><i class="fa fa-sign-in"></i>Sign in</a></li>
+				<li><a ng-click="openSettings()" analytics-on="click" analytics-event="Open Settings" analytics-category="Navigation"><i class="fa fa-cog"></i>Settings</a></li>
+			</ul>
+		</div>
+	</nav>
+
+	<ng-view></ng-view>
+
+	<script type="text/ng-template" id="/combine.htm">
+		<div class="container below-header has-combine flex-row flex-delimit">
+			<div class="flex-expand combine-sets">
+				<h3>Sets to combine</h3>
+				<div class="list-group">
+					<label label-fix class="list-group-item" ng-repeat="obj in setList.slice(1)" ng-class="{'list-group-item-info' : obj.chosen}">
+						<input type="checkbox" ng-model="obj.chosen"><span></span>
+						{{obj.title}} <span class="text-muted">({{obj.term_count}} terms)</span>
+					</label>
+				</div>
+			</div>
+			<div class="combine-opts">
+				<h3>Options</h3>
+				<div class="alert" ng-class="'alert-' + alert.type" role="alert" ng-show="alert">{{alert.text}}</div>
+				<form role="form">
+					<div class="form-group flex-row flex-delimit flex-center">
+						<!-- No label-fix needed here: clicking on the label SHOULDN'T focus the form control on iOS -->
+						<label>New set name: </label><input class="form-control flex-expand" type="text" ng-model="setName">
+					</div>
+					<div class="checkbox">
+						<label label-fix class="slider-fixer">
+							<input type="checkbox" ng-model="removeGrammar"><span></span>Remove grammatical information
+						</label>
+					</div>
+					<loading-button btn-class="btn btn-primary btn-lg btn-block" start="doCombine()">Combine & Deduplicate</loading-button>
+				</form>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/ng-template" id="/cardlist.htm">
+		<nav class="navbar navbar-default navbar-fixed-top secondary-nav nonbounce" role="navigation">
+			<div class="container">
+				<form class="navbar-form flex-delimit cards-form clearfix" ng-show="cards">
+					<div class="select-wrap">
+						<div class="webkit-select-holder  set-box flex-row">
+							<select class="form-control flex-expand" ng-model="o.showSet" ng-options="obj.id as obj.title for obj in setList.slice(1)"></select>
+						</div>
+					</div>
+					<div class="flex-row search-holder flex-delimit">
+						<div class="input-group flex-expand search-set">
+							<input type="text" class="form-control flex-expand" placeholder="Search this set&hellip;" lang="la" autocorrect="off" autocapitalize="off"
+								ng-model="setSearch" ng-change="atCard = getFirst()" ng-enter="atCard = getNext() || getFirst()">
+							<span class="input-group-addon find-addon" ng-show="setSearch" ng-class="{ 'bg-danger': indexInfo() == '0/0' }">{{indexInfo()}}</span>
+							<span class="input-group-btn">
+								<button class="btn btn-default" type="button"
+									ng-click="atCard = getPrev()" ng-disabled="getPrev() == null"><i class="fa fa-chevron-up"></i></button>
+								<button class="btn btn-default" type="button"
+									ng-click="atCard = getNext()" ng-disabled="getNext() == null"><i class="fa fa-chevron-down"></i></button>
+							</span>
+						</div>
+
+						<div class="flex-col flex-center">
+							<bs-switch type="checkbox"  ng-model="sortAlpha" switch-on-text="{{'\uf15d'}}" switch-off-text="{{'\uf162'}}" switch-label-width="0px"
+							switch-handle-width="20px"
+							switch-size="large"></bs-switch>
+						</div>
+
+						<div class="btn-group" dropdown>
+							<button type="button" class="btn btn-default dropdown-toggle" dropdown-toggle>
+								<i class="fa fa-cog"></i>&#8196;<span class="caret"></span>
+							</button>
+							<ul class="dropdown-menu dropdown-menu-right bullet pull-right" click-block>
+								<li>
+									<label label-fix class="slider-fixer phone-fix">
+										<input type="checkbox" ng-model="sortAlpha"><span></span>Alphabetize
+									</label>
+								</li>
+								<li>
+									<label label-fix class="slider-fixer phone-fix">
+										<input type="checkbox" ng-model="settings.hideDefs"><span></span>Hide definitions <strong>(BETA)</strong>
+									</label>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</form>
+			</div>
+		</nav>
+		<div class="container below-header has-terms nonbounce" scroll-unlocker>
+			<div class="sect-hold">
+				<div ng-controller="RowCardCtrl" ng-repeat="card in cards | orderBy:(sortAlpha ? 'sortTerm' : 'number')">
+				<section
+					ng-class="
+						[card == atCard ? 'current' : (matches(card) ? 'matches' : 'nofind'),
+						state,
+						(state == 'unexposed' && settings.hideDefs) ? 'hide-defs' : 'show-defs']
+					" class="clearfix do-anim"
+					scroll-if="card == atCard"
+					scroll-index="sortedCards().indexOf(card)">
+					<div class="num text-right text-muted">{{card.number + 1}}</div>
+					<div class="main panel panel-body panel-default do-anim" swipeable-card state="state">
+						<div class="term">
+							<strong class="ed-text">{{card.term}}</strong>
+							<input type="text" class="edit-ctrls form-control" ng-model="editing.term">
+						</div>
+						<div class="def">
+							<span class="ed-text">{{card.definition}}</span>
+							<textarea class="edit-ctrls form-control" ng-model="editing.definition" rows="2"></textarea>
+						</div>
+					</div>
+					<div class="exposed-buttons">
+						<div class="btn-group simple-buttons">
+							<button class="btn btn-default" ng-click="editCardInline(card)"><i class="fa fa-pencil"></i></button>
+							<button class="btn btn-danger" ng-click="deleteCard(card)"><i class="fa fa-trash-o"></i></button>
+						</div>
+						<div class="btn-group editing-btns">
+							<button class="btn btn-success" ng-click="saveEdit()"><i class="fa fa-check"></i></button>
+							<button class="btn btn-default" ng-click="cancelEdit()"><i class="fa fa-times"></i></button>
+						</div>
+						<div class="btn-group save-hold">
+							<button class="btn btn-success" disabled>Saving&hellip;</button>
+						</div>
+					</div>
+				</section>
+				</div>
+			</div>
+		</div>
+	</script>
+
+	<script type="text/ng-template" id="/search.htm">
+		<nav class="navbar navbar-default navbar-fixed-top secondary-nav nonbounce" role="navigation">
+			<div class="container">
+				<form class="navbar-form flex-row flex-delimit">
+					<input class="search form-control flex-expand" placeholder="Find a word&hellip;" autocorrect="off" autocapitalize="off" ng-model="searchBox" select-on-focus>
+					<!-- Autofocus causes issues with autoselect on ios -->
+					<div class="btn-group" dropdown>
+						<button type="button" class="btn btn-default dropdown-toggle" dropdown-toggle>
+							<i class="fa fa-book"></i>&#8196;<span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu dropdown-menu-right bullet pull-right" click-block>
+							<li>
+								<label label-fix class="slider-fixer">
+
+									<input type="radio" ng-model="settings.parseMode" ng-value="false"><span></span>Longer definitions
+								</label>
+								<label label-fix class="slider-fixer">
+									<input type="radio" ng-model="settings.parseMode" ng-value="true"><span></span>Parse grammar
+								</label>
+							</li>
+						</ul>
+					</div>
+				</form>
+			</div>
+		</nav>
+		<div class="container below-header nonbounce" search-blur>
+
+			<section ng-repeat="result in searchResults" class="panel panel-default search-result" ng-controller="EntryCtrl">
+				<button class="btn btn-default pull-right fl-btn btn-primary needsclick" touch-fix
+					ng-show="isLoggedIn && result.text.heading" ng-click="doShowCard($event)"
+					analytics-on="click" analytics-event="Add Flashcard" analytics-category="Commands"
+				><i class="fa fa-plus"></i>&#8196;Flashcard</button>
+				<div class="panel-body">
+
+					<p class="note" ng-if="result.text.note"><strong>Note:</strong> <span ng-html-compile="result.text.note"></span></p>
+					<p class="possforms" ng-html-compile="result.text.possforms" ng-if="result.text.possforms"></p>
+					<h3 lang="la" ><strong>{{result.text.heading}}</strong><span ng-html-compile="result.text.grammar" choose-val="choices.header"></span></h3>
+					<!-- lang="la" for hyphenation -->
+					<div ng-html-compile="result.text.defs" choose-val="choices.def"></div>
+				</div>
+			</section>
+			<footer>
+			<!--  Move elsewhere? -->
+				<small>&copy; Jason Hansel. Dictionary entries from Lewis&#8217;s <cite>An Elementary Latin Dictionary</cite>, provided by
+				<a href="http://www.perseus.tufts.edu/hopper/text?doc=Perseus%3Atext%3A1999.04.0060">Perseus</a> under the
+				<a href="http://creativecommons.org/licenses/by-sa/3.0/us/">CC BY-SA 3.0</a> license. Entries are processed before being displayed.
+				The processed entries are <a href="dictionary.sqlite">available for download</a> under the same license in SQLite format.
+				In Parse Mode, Whittaker's Words is used. <a href="http://quizlet.com/"><b>Powered by Quizlet.com.</b></a></small>
+			</footer>
+		</div>
+	</script>
+
+	<!-- MODALS -->
+
+	<script type="text/ng-template" id="/deleteCard.htm">
+		<div class="modal-body flex-expand flex-col">
+			<div>
+				Are you sure you want to delete this card?
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-default" ng-click="$close(false);">No</button>
+			<div class="flex-expand"></div>
+			<button class="btn btn-danger" ng-click="$close(true);">Yes</button>
+		</div>
+	</script>
+
+	<script type="text/ng-template" id="/logIn.htm">
+		<div class="modal-header">
+			<h3 class="modal-title">Sign In</h3>
+		</div>
+		<div class="modal-body flex-col flex-expand signin-body flex-delimit">
+			<a class="btn btn-primary btn-lg" x-linkfix="true" ng-href="{{loginURI}}"><i class="fa fa-sign-in"></i>&#8194;Sign in with Quizlet</a>
+			<button class="btn btn-danger btn-sm" type="button" ng-click="$close()">No Thanks</button>
+			<p class="small text-center">You must be logged in to add & manage flashcards.</p>
+		</div>
+	</script>
+
+	<script type="text/ng-template" id="/addCard.htm">
+		<div class="modal-header">
+			<h3 class="modal-title">Add Card</h3>
+		</div>
+		<div class="alert" ng-class="'alert-' + alert.type" role="alert" ng-show="alert">{{alert.text}}</div>
+		<form role="form" ng-class="{'is-creating': (card.set == 'create')}" class="flex-expand flex-col">
+			<div class="modal-body flex-col flex-expand">
+				<div class="form-group">
+					<input class="form-control term" autocorrect="off" autocapitalize="off" value="" ng-model="card.term">
+				</div>
+				<div class="form-group flex-expand flex-col">
+					<textarea class="form-control def flex-expand" ng-model="card.def" rows="3"></textarea>
+				</div>
+				<div class="form-group flex-row flex-delimit">
+					<div class="webkit-select-holder flex-expand flex-row">
+						<select class="form-control set flex-expand" ng-model="card.set" ng-options="obj.id as obj.title for obj in setList"></select>
+					</div>
+					<input class="form-control setname flex-expand" ng-model="card.setName" ng-if="card.set == 'create'">
+				</div>
+				<div class="form-group flex-row markers">
+					<label>Markers:</label>
+					<div class="btn-group flex-expand flex-row">
+						<button class="btn btn-default" ng-model="markers['*']" btn-checkbox>*</button>
+						<button class="btn btn-default" ng-model="markers['**']" btn-checkbox>**</button>
+						<button class="btn btn-default" ng-model="markers['***']" btn-checkbox>***</button>
+						<button class="btn btn-default" ng-model="markers['****']" btn-checkbox>****</button>
+						<button class="btn btn-default" ng-model="markers['*****']" btn-checkbox>*****</button>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-danger" type="button" ng-click="closeCard()">Close</button>
+				<div class="flex-expand"></div>
+				<loading-button btn-class="btn btn-primary" start="addCard()">Add<span class="xtra-text"> Card</span></loading-button>
+			</div>
+		</form>
+	</script>
+
+	<script type="text/ng-template" id="/settingsPage.htm">
+		<div class="modal-header">
+			<h3 class="modal-title">Settings</h3>
+		</div>
+		<div class="modal-body flex-expand settings">
+			<p ng-show="isLoggedIn">
+			<span class="text-info">Quizlet:</span> Logged in as {{username}} (<a class="text-danger uline" x-linkfix="true" href="login?logout=true">Sign out</a>)</p>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-primary" type="button" ng-click="$close()">Done</button>
+		</div>
+	</script>
+
+	<!-- /MODALS -->
+
+	<script type="text/ng-template" id="/tpl.html">
+		<button ng-click="load()" ng-class="btnClass" type="button" ng-disabled="loading">
+			<span ng-transclude ng-class="loading ? 'is-loading' : ''"></span>
+			<span ng-class="!loading ? 'hide' : ''"><i class="fa-spin fa-refresh fa" style="margin-right:0"></i></span>
+		</button>
+	</script>
+
+</body>
+</html>

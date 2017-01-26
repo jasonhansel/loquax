@@ -1,0 +1,12 @@
+{
+	"ignore": [
+		".git",
+		"node_modules",
+		"words",
+		"public",
+		"build_cache"
+	],
+	"env": {
+		"NODE_ENV": "development"
+	}
+}
