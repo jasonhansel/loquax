@@ -1,0 +1,117 @@
+// Core variables and mixins
+@import "../node_modules/bootstrap/less/variables.less";
+@import "../node_modules/bootstrap/less/mixins.less";
+
+
+// Variable overrides
+
+@loquax-color: #FCF7EA;
+@body-bg: @loquax-color;
+@font-family-sans-serif: "Alegreya Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+@font-family-serif: Alegreya, Palatino, Cambria, Georgia, serif;
+@font-size-base: 19px;
+@font-size-large: ceil((@font-size-base * 1.25));
+@font-size-small: ceil((@font-size-base * 0.85));
+@font-size-h1: 30px;
+@font-size-h2: 34px;
+@font-size-h3: 27.2px;
+@font-size-h4: ceil((@font-size-base * 1.25));
+@font-size-h5: @font-size-base;
+@font-size-h6: ceil((@font-size-base * 0.85));
+@headings-font-family: @font-family-serif;
+@headings-font-weight: 400;
+@grid-float-breakpoint: 1px;
+@navbar-default-brand-color: black;
+@navbar-default-brand-hover-color: black;
+@navbar-default-border: #c6c6c6;
+@modal-header-border-color: #c6c6c6;
+@modal-footer-border-color: #c6c6c6;
+@old:             #66afe9;
+@input-border-focus: hsl(hue(spin(@loquax-color, 180)), saturation(@old), lightness(@old) + 12);
+
+@alert-success-border: darken(@state-success-border, 10%);
+@alert-info-border: darken(@state-info-border, 10%);
+@alert-warning-border: darken(@state-warning-border, 10%);
+@alert-danger-border: darken(@state-danger-border, 10%);
+
+// Reset and dependencies
+@import "../node_modules/bootstrap/less/normalize.less";
+// @import "../node_modules/bootstrap/less/print.less";
+// @import "../node_modules/bootstrap/less/glyphicons.less";
+
+// Core CSS
+@import "../node_modules/bootstrap/less/scaffolding.less";
+@import "../node_modules/bootstrap/less/type.less";
+// @import "../node_modules/bootstrap/less/code.less";
+
+
+// Simplified grid
+.container { .container-fixed(); }
+.container-fluid { .container-fixed(); }
+
+
+// @import "../node_modules/bootstrap/less/grid.less";
+@import "../node_modules/bootstrap/less/tables.less";
+@import "../node_modules/bootstrap/less/forms.less";
+@import "../node_modules/bootstrap/less/buttons.less";
+
+// Components
+@import "../node_modules/bootstrap/less/component-animations.less";
+@import "../node_modules/bootstrap/less/dropdowns.less";
+@import "../node_modules/bootstrap/less/button-groups.less";
+@import "../node_modules/bootstrap/less/input-groups.less";
+@import "../node_modules/bootstrap/less/navs.less";
+@import "../node_modules/bootstrap/less/navbar.less";
+// @import "../node_modules/bootstrap/less/breadcrumbs.less";
+// @import "../node_modules/bootstrap/less/pagination.less";
+// @import "../node_modules/bootstrap/less/pager.less";
+// @import "../node_modules/bootstrap/less/labels.less";
+// @import "../node_modules/bootstrap/less/badges.less";
+@import "../node_modules/bootstrap/less/jumbotron.less"; // For error page
+// @import "../node_modules/bootstrap/less/thumbnails.less";
+@import "../node_modules/bootstrap/less/alerts.less";
+// @import "../node_modules/bootstrap/less/progress-bars.less";
+// @import "../node_modules/bootstrap/less/media.less";
+
+label.list-group-item {
+  color: @list-group-link-color;
+
+  .list-group-item-heading {
+    color: @list-group-link-heading-color;
+  }
+
+  // Hover state
+  	&:hover {
+  	  text-decoration: none;
+  	  color: @list-group-link-hover-color;
+  	  background-color: @list-group-hover-bg;
+  	}
+
+}
+
+label.list-group-item-info {
+	color: @state-info-text;
+	&:hover {
+		color: @state-info-text;
+		background-color: darken(@state-info-bg, 2%);
+	}
+}
+
+@import "../node_modules/bootstrap/less/list-group.less";
+@import "../node_modules/bootstrap/less/panels.less";
+// @import "../node_modules/bootstrap/less/responsive-embed.less";
+// @import "../node_modules/bootstrap/less/wells.less";
+// @import "../node_modules/bootstrap/less/close.less";
+
+
+
+
+// Components w/ JavaScript
+@import "../node_modules/bootstrap/less/modals.less";
+// @import "../node_modules/bootstrap/less/tooltip.less";
+@import "../node_modules/bootstrap/less/popovers.less";
+// @import "../node_modules/bootstrap/less/carousel.less";
+
+// Utility classes
+@import "../node_modules/bootstrap/less/utilities.less";
+@import "../node_modules/bootstrap/less/responsive-utilities.less";
