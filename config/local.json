@@ -1,0 +1,21 @@
+{
+	"clientID": "", // Quizlet client ID
+	"secret": "", // Quizlet session secret
+	"redirectURL": "http://localhost:3000/login", // Canonical login page
+	"mainURL": "http://localhost:3000/", // Canonical domain name and port
+	"reqHost": "localhost", // Canonical hostname
+
+	"sessionSecret": "", // Secret for encrypting session data
+	"constantToken": true, // Persist CSRF token (disable in prod)
+	"stackTrace": true, // Show stack traces in error pages
+	"whDir": "words", // Location of Whitaker's Words
+	"whExec": "words.exe", // Name of Whitaker's Words executable file
+	"minify": false, // Enable minification
+	"prefix": "", // URL directory prefix (needed for some reverse proxies)
+	"unix": false, // Use UNIX line endings
+	"prodLogFormat": false, // Production-style log format
+	"analytics": null, // GA identifier
+	"https": false, // Enable HTTPS
+	"localhost": true, // Running on localhost
+	"refreshWhit": false // Copy correct Whitaker's data files
+}
